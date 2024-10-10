@@ -1,0 +1,928 @@
+{
+	"info": {
+		"_postman_id": "c4fdd267-0b99-4c69-bde1-523b4fb592e7",
+		"name": "Automation exercise (API testing)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38049165"
+	},
+	"item": [
+		{
+			"name": "API 1: GET All Products List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Case 1: Get All Products List\r",
+							"const Ajv = require('ajv');\r",
+							"const ajv = new Ajv();\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body is not empty\", () => {\r",
+							"  pm.expect(pm.response.text()).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"const schema = {\r",
+							"  type: \"object\",\r",
+							"  properties: {\r",
+							"    responseCode: { type: \"integer\" },\r",
+							"    products: {\r",
+							"      type: \"array\",\r",
+							"      items: {\r",
+							"        type: \"object\",\r",
+							"        properties: {\r",
+							"          id: { type: \"integer\" },\r",
+							"          name: { type: \"string\" },\r",
+							"          price: { type: \"string\" },\r",
+							"          brand: { type: \"string\" },\r",
+							"          category: {\r",
+							"            type: \"object\",\r",
+							"            properties: {\r",
+							"              usertype: {\r",
+							"                type: \"object\",\r",
+							"                properties: {\r",
+							"                  usertype: { type: \"string\" }\r",
+							"                },\r",
+							"                required: [\"usertype\"]\r",
+							"              },\r",
+							"              category: { type: \"string\" }\r",
+							"            },\r",
+							"            required: [\"usertype\", \"category\"]\r",
+							"          }\r",
+							"        },\r",
+							"        required: [\"id\", \"name\", \"price\", \"brand\", \"category\"]\r",
+							"      }\r",
+							"    }\r",
+							"  },\r",
+							"  required: [\"responseCode\", \"products\"]\r",
+							"};\r",
+							"\r",
+							"// Validate the response against the schema\r",
+							"pm.test(\"Response matches the schema\", () => {\r",
+							"  pm.expect(ajv.validate(schema, pm.response.json())).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Id is a non-negative integer\", () => {\r",
+							"  pm.expect(responseData.products).to.be.an('array');\r",
+							"  responseData.products.forEach((product) => {\r",
+							"    pm.expect(product.id).to.be.a('number').and.to.satisfy((id) => id >= 0, \"Id should be a non-negative integer\");\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Product name is not empty\", () => {\r",
+							"  responseData.products.forEach((product) => {\r",
+							"    pm.expect(product.name).to.not.be.empty;\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Price is in the correct format\", () => {\r",
+							"  const priceRegex = /^Rs\\. \\d+$/;\r",
+							"  responseData.products.forEach((product) => {\r",
+							"    pm.expect(product.price).to.match(priceRegex);\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"pm.test(\"At least one product per usertype\", () => {\r",
+							"  const usertypes = { Women: 0, Men: 0, Kids: 0 };\r",
+							"  responseData.products.forEach((product) => {\r",
+							"    usertypes[product.category.usertype.usertype]++;\r",
+							"  });\r",
+							"  pm.expect(usertypes.Women).to.be.greaterThan(0);\r",
+							"  pm.expect(usertypes.Men).to.be.greaterThan(0);\r",
+							"  pm.expect(usertypes.Kids).to.be.greaterThan(0);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/productsList",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"productsList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 2: POST To All Products List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Case 2: POST To All Products List\r",
+							"const responseData = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response code is 405\", () => {\r",
+							"    pm.expect(responseData.responseCode).to.eql(405);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response message should be 'This request method is not supported.'\", () => {\r",
+							"    pm.expect(responseData.message).to.eql(\"This request method is not supported.\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has the required fields - responseCode and message\", () => {\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.responseCode).to.exist;\r",
+							"    pm.expect(responseData.message).to.exist;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Random Shirt\",\r\n    \"price\": \"Rs. 600\",\r\n    \"brand\": \"Random Brand\",\r\n    \"category\": {\r\n        \"usertype\": {\r\n            \"usertype\": \"Women\"\r\n        },\r\n        \"category\": \"Tops\"\r\n    }\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/productsList",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"productsList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 3: GET All Brands List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// // Test Case 3: Get All Brands List\r",
+							"const Ajv = require('ajv');\r",
+							"const ajv = new Ajv();\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () =>  {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response body is not empty\", () => {\r",
+							"    pm.expect(pm.response.text()).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"const schema = {\r",
+							"    type: \"object\",\r",
+							"    properties: {\r",
+							"        responseCode: { type: \"integer\" },\r",
+							"        brands: {\r",
+							"            type: \"array\",\r",
+							"            items: {\r",
+							"                type: \"object\",\r",
+							"                properties: {\r",
+							"                    id: { type: \"integer\" },\r",
+							"                    brand: { type: \"string\" }\r",
+							"                },\r",
+							"                required: [\"id\", \"brand\"]\r",
+							"            }\r",
+							"        }\r",
+							"    },\r",
+							"    required: [\"responseCode\", \"brands\"]\r",
+							"};\r",
+							"\r",
+							"// Validate the response against the schema\r",
+							"pm.test(\"Response matches the schema\", () => {\r",
+							"    pm.expect(ajv.validate(schema, pm.response.json())).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Id is a non-negative integer\", () => {\r",
+							"    pm.expect(responseData.brands).to.be.an('array');\r",
+							"    responseData.brands.forEach(function(brand) {\r",
+							"        pm.expect(brand.id).to.be.a('number').and.to.satisfy((id) => id >= 0, \"Id should be a non-negative integer\");\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Brand name is not empty\", () => {\r",
+							"  responseData.brands.forEach((brand) => {\r",
+							"    pm.expect(brand.brand).to.not.be.empty;\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response contains at least 3 brands\", () => {\r",
+							"  pm.expect(responseData.brands.length).to.be.at.least(3);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Contains known brands\", () => {\r",
+							"  const knownBrands = [\"Polo\", \"H&M\", \"Madame\"];\r",
+							"  const brandNames = responseData.brands.map((brand) => brand.brand);\r",
+							"  knownBrands.forEach((brand) => {\r",
+							"    pm.expect(brandNames).to.include(brand);\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/brandsList",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"brandsList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 4: PUT To All Brands List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Case 4: PUT To All Brands List\r",
+							"const responseData = pm.response.json(); \r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response code is 405\", () => {\r",
+							"    pm.expect(responseData.responseCode).to.eql(405);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response message should be 'This request method is not supported.'\", () => {\r",
+							"    pm.expect(responseData.message).to.eql(\"This request method is not supported.\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"pm.test(\"Response has the required fields - responseCode and message\", () => {\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.responseCode).to.exist;\r",
+							"    pm.expect(responseData.message).to.exist;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/brandsList",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"brandsList"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 11: POST To Create/Register User Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Case 11: POST To Create/Register User Account\r",
+							"const jsonData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200)\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response code is 201\", () => {\r",
+							"    pm.expect(jsonData.responseCode).to.eql(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response message should be 'User created!'\", () => {\r",
+							"    pm.expect(jsonData.message).to.eql(\"User created!\");\r",
+							"});\r",
+							"pm.test(\"Content type is application/json\", () => {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Retrieve existing variables from the environment\r",
+							"let name = pm.environment.get(\"name\");\r",
+							"let email = pm.environment.get(\"email\");\r",
+							"let password = pm.environment.get(\"password\");\r",
+							"\r",
+							"// Log the retrieved values to the Postman Console for verification\r",
+							"console.log(\"Retrieved Name: \" + name);\r",
+							"console.log(\"Retrieved Email: \" + email);\r",
+							"console.log(\"Retrieved Password: \" + password);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "{{name}}",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "{{email}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						},
+						{
+							"key": "dob_day",
+							"value": "15",
+							"type": "text"
+						},
+						{
+							"key": "dob_month",
+							"value": "July",
+							"type": "text"
+						},
+						{
+							"key": "dob_year",
+							"value": "2000",
+							"type": "text"
+						},
+						{
+							"key": "firstname",
+							"value": "Josh",
+							"type": "text"
+						},
+						{
+							"key": "lastname",
+							"value": "Doe",
+							"type": "text"
+						},
+						{
+							"key": "address1",
+							"value": "Alleyway 123",
+							"type": "text"
+						},
+						{
+							"key": "address2",
+							"value": "Alleyway 321",
+							"type": "text"
+						},
+						{
+							"key": "company",
+							"value": "Devon Energy",
+							"type": "text"
+						},
+						{
+							"key": "country",
+							"value": "United States",
+							"type": "text"
+						},
+						{
+							"key": "state",
+							"value": "New York",
+							"type": "text"
+						},
+						{
+							"key": "city",
+							"value": "Genova",
+							"type": "text"
+						},
+						{
+							"key": "zipcode",
+							"value": "10001",
+							"type": "text"
+						},
+						{
+							"key": "mobile_number",
+							"value": "1234567890",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://automationexercise.com/api/createAccount",
+					"protocol": "https",
+					"host": [
+						"automationexercise",
+						"com"
+					],
+					"path": [
+						"api",
+						"createAccount"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 13: PUT To Update User Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Case 13: PUT METHOD To Update User Account\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response message should be 'User updated!'\", () => {\r",
+							"    pm.expect(responseData.message).to.eql(\"User updated!\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response has the required fields - responseCode and message\", () => {\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.responseCode).to.exist;\r",
+							"    pm.expect(responseData.message).to.exist;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "{{name}}",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "{{email}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						},
+						{
+							"key": "title",
+							"value": "Mr",
+							"type": "text"
+						},
+						{
+							"key": "birth_date",
+							"value": "19",
+							"type": "text"
+						},
+						{
+							"key": "birth_month",
+							"value": "December",
+							"type": "text"
+						},
+						{
+							"key": "birth_year",
+							"value": "2004",
+							"type": "text"
+						},
+						{
+							"key": "firstname",
+							"value": "Kevin",
+							"type": "text"
+						},
+						{
+							"key": "lastname",
+							"value": "Miller",
+							"type": "text"
+						},
+						{
+							"key": "company",
+							"value": "Devon Energy",
+							"type": "text"
+						},
+						{
+							"key": "address1",
+							"value": "Alleyway 123",
+							"type": "text"
+						},
+						{
+							"key": "address2",
+							"value": "Alleyway 321",
+							"type": "text"
+						},
+						{
+							"key": "country",
+							"value": "United States",
+							"type": "text"
+						},
+						{
+							"key": "zipcode",
+							"value": "10001",
+							"type": "text"
+						},
+						{
+							"key": "state",
+							"value": "New York",
+							"type": "text"
+						},
+						{
+							"key": "city",
+							"value": "Geneva",
+							"type": "text"
+						},
+						{
+							"key": "mobile_number",
+							"value": "1234567890",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/api/updateAccount",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"updateAccount"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 14: GET user account detail by email",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test Case 14: GET user account detail by email\r",
+							"const Ajv = require('ajv');\r",
+							"const ajv = new Ajv();\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () => {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"const schema = {\r",
+							"    type: \"object\",\r",
+							"    properties: {\r",
+							"        responseCode: { type: \"integer\" },\r",
+							"        user: {\r",
+							"            type: \"object\",\r",
+							"            properties: {\r",
+							"                id: { type: \"integer\" },\r",
+							"                name: { type: \"string\" },\r",
+							"                email: { type: \"string\", format: \"email\" },\r",
+							"                title: { type: \"string\", enum: [\"Mr\", \"Ms\", \"Mrs\", \"Dr\"] },\r",
+							"                birth_day: { type: \"string\" },\r",
+							"                birth_month: { type: \"string\", enum: [\"January\", \"February\", \"March\", \"April\", \"May\", \"June\", \"July\", \"August\", \"September\", \"October\", \"November\", \"December\"] },\r",
+							"                birth_year: { type: \"string\", pattern: \"^[0-9]{4}$\" },\r",
+							"                first_name: { type: \"string\" },\r",
+							"                last_name: { type: \"string\" },\r",
+							"                company: { type: \"string\" },\r",
+							"                address1: { type: \"string\" },\r",
+							"                address2: { type: \"string\" },\r",
+							"                country: { type: \"string\" },\r",
+							"                state: { type: \"string\" },\r",
+							"                city: { type: \"string\" },\r",
+							"                zipcode: { type: \"string\", pattern: \"^[0-9]{5}(-[0-9]{4})?$\" }\r",
+							"            },\r",
+							"            required: [\"id\", \"name\", \"email\", \"birth_day\", \"birth_month\", \"birth_year\", \"first_name\", \"last_name\", \"address1\", \"country\", \"state\", \"city\", \"zipcode\"]\r",
+							"        }\r",
+							"    },\r",
+							"    required: [\"responseCode\", \"user\"]\r",
+							"};\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response matches the schema\", () => {\r",
+							"    pm.expect(ajv.validate(schema, responseData)).to.be.true;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Id is a non-negative integer\", () => {\r",
+							"    pm.expect(responseData.user.id).to.be.a('number').and.to.satisfy((id) => id >= 0, \"Id should be a non-negative integer\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Email format is valid\", () => {\r",
+							"  const email = responseData.user.email;\r",
+							"  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\r",
+							"  pm.expect(email).to.match(emailRegex, \"Email should be in a valid format\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Name fields are not empty\", () => {\r",
+							"  const user = responseData.user;\r",
+							"  pm.expect(user.first_name).to.not.be.empty;\r",
+							"  pm.expect(user.last_name).to.not.be.empty;\r",
+							"  pm.expect(user.name).to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Birth date is valid\", () => {\r",
+							"  const user = responseData.user;\r",
+							"  const day = parseInt(user.birth_day, 10);\r",
+							"  const year = parseInt(user.birth_year, 10);\r",
+							"  const validMonths = [\r",
+							"    \"January\", \"February\", \"March\", \"April\", \"May\", \"June\",\r",
+							"    \"July\", \"August\", \"September\", \"October\", \"November\", \"December\"\r",
+							"  ];\r",
+							"  pm.expect(day).to.be.within(1, 31, \"Day should be between 1 and 31\");\r",
+							"  pm.expect(validMonths).to.include(user.birth_month, \"Month should be a valid month\");\r",
+							"  pm.expect(year).to.be.within(1900, new Date().getFullYear(), \"Year should be realistic\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/getUserDetailByEmail?email={{email}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"getUserDetailByEmail"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "{{email}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API 12: DELETE To Delete User Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// // Test Case 12: DELETE METHOD To Delete User Account\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response status code is 200\", () =>{\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Message is 'Account deleted!'\", () => {\r",
+							"  pm.expect(responseData.message).to.equal(\"Account deleted!\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2s\", () => {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response headers have correct structure\", () => {\r",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/html\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response has the required fields - responseCode and message\", () => {\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.responseCode).to.exist;\r",
+							"    pm.expect(responseData.message).to.exist;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "{{email}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/api/deleteAccount",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"deleteAccount"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "https://www.automationexercise.com/",
+			"type": "string"
+		},
+		{
+			"key": "name",
+			"value": "Josh666",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "Josh666abc",
+			"type": "string"
+		},
+		{
+			"key": "email",
+			"value": "Josh666@gmail.com",
+			"type": "string"
+		}
+	]
+}
