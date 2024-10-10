@@ -28,13 +28,13 @@ Before you begin, ensure you have the following installed on your machine:
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/aivaras23/.git
+    git clone https://github.com/aivaras23/postman-api-test-project.git
     ```
 
 2. Navigate into the project directory:
 
     ```bash
-    cd
+    cd postman-api-test-project
     ```
 
 3. (Optional) If you're using Visual Studio Code, you can open the project directly in VS Code:
